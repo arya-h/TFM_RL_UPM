@@ -2,7 +2,7 @@ import gym
 import collections
 from tensorboardX import SummaryWriter
 
-ENV_NAME = "FrozenLake-v0"
+ENV_NAME = "FrozenLake-v1"
 GAMMA = 0.9
 TEST_EPISODES = 20
 
