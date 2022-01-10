@@ -3,16 +3,7 @@ from agent import Agent
 import gym
 from typing import TypeVar
 import random
-
-
-#for action wrapper
-Action = TypeVar('Action')
-class RandomActionWrapper(gym.ActionWrapper):
-    #override of init method.
-    def __init__(self, env, epsilon=0.1):
-        super(RandomActionWrapper, self).__init__(env)
-        self.epsilon = epsilon
-
+from wrappers.actionwrapper import RandomActionWrapper
 
 
 def random_agent():
@@ -78,11 +69,30 @@ def random_cart_pole():
 
 
 def wrapper_action_example():
+    #pass the wrapper to the environment instance gym.make
+    #if i want to nest wrappers i can do so without any constraint on order
+    #the wrapper can be used as a normal environment instance
+
+    env = RandomActionWrapper(gym.make("CartPole-v0"))
+    #monitor lets us see with a graphical interface the evolution of the agent
+    #directory passed as 2nd argumentd should NOT exist
+    env = gym.wrappers.Monitor(env, "recording", force=True) #second argument is the directory it will write results to
+    total_reward = 0.0
+    obs = env.reset() #remember to reset environment at the beginning
+
+
+    while True:
+        obs, reward, done, _ = env.step(0) #takes the same action always,
+        total_reward += reward
+        if done:
+            break
+        print("Reward got: %.2f" % total_reward)
+
 
 
 
 
 if __name__ == '__main__':
-    random_cart_pole()
-
+    #random_cart_pole()
+    wrapper_action_example()
 
