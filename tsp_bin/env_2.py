@@ -38,7 +38,6 @@ cities = {
 
 
 font = cv2.FONT_HERSHEY_COMPLEX_SMALL
-top_text = plt.text(0, -10, "")
 
 
 class RegionScape(Env):
@@ -49,56 +48,14 @@ class RegionScape(Env):
 
         # reward
         self.space_traveled = 0  # initially zero when starting trip
+        #observation space is a matrix of objects, containing either blank points or cities
+        self.observation_space
 
-        # define the matrix where the traveller can move
-        # 3 to add rgb colors
-        self.observation_shape = (100, 100, 3)
-        self.observation_space = spaces.Discrete(2)  # coordinates of position
-        self.action_space = spaces.Discrete(numCities, )  # numCities cities possible to choose from
 
-        self.numCities = numCities  # number of nodes in the map
-        # start simple, 5 cities
-        self.cities = cities
-        #for visual representation
-        self.canvas = np.ones(self.observation_shape) * 1
-        self.matrix = matshow(self.canvas)
-        self.initial_state = 0  # arbitrarily put madrid as first city
-        self.traveler_x = self.cities.get(0)["x"]
-        self.traveler_y = self.cities.get(0)["y"]
-
-        self.steps = self.numCities  # to reach all cities including the starting one
-        matshow(self.canvas)
-        for val in self.cities.values():
-            # plot points and name of city
-            plt.scatter(val["x"], val["y"])
-            plt.annotate(val["city"], (val["x"], val["y"]))
-
-        # for text
-        self.y_min = 0
-        self.x_min = 0
-        self.y_max = 100
-        self.x_max = 100
-
-        plt.text(0, -10, "cities left : {}".format(self.steps))
 
     def reset(self):
-        # back to initial configuration
-        self.steps = self.numCities
-        self.cities = cities
-        #reset initial pos
-        self.initial_state = 0
-        self.traveler_x = self.cities.get(0)["x"]
-        self.traveler_y = self.cities.get(0)["y"]
-        # reset canvas
-        self.canvas = np.ones(self.observation_shape) * 1
-        self.matrix = matshow(self.canvas)
-        matshow(self.canvas)
-        for val in self.cities.values():
-            # plot points and name of city
-            plt.scatter(val["x"], val["y"])
-            plt.annotate(val["city"], (val["x"], val["y"]))
+        pass
 
-        plt.text(0, -10, "cities left : {}".format(self.steps))
 
     # 2 parts
     # > apply action to agent
@@ -135,6 +92,7 @@ class RegionScape(Env):
         y_val = [pt1[1], pt2[1]]
 
         plt.plot(x_val, y_val)
+        self.text = self.text.set_text( "cities left : {}".format(self.steps))
 
         self.steps-=1
 

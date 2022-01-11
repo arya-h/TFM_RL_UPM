@@ -1,14 +1,21 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import gym
+import collections
+from tensorboardX import SummaryWriter
 
-from TSP.environment import RegionScape
+from TSP.customEnv.envs.TSPagent import TSPAgent
+from TSP.customEnv.envs.TSPenv import RegionEnv
 
-if __name__=="__main__":
+ENV_NAME = "customEnv"
+GAMMA = 0.9
+TEST_EPISODES = 20
 
-    env = RegionScape(5)
-    obs = env.reset()
+if __name__ == "__main__":
+    test_env = RegionEnv(5,0)
+    agent = TSPAgent(test_env)
+    writer = SummaryWriter(comment="-v-iteration")
 
-    env.step(1)
-    plt.show()
+    iter_no = 0
+    best_reward = 0.0
+    agent.play_n_random_steps(20)
 
-    pass
+
