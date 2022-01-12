@@ -1,9 +1,7 @@
-import gym
 import collections
 import matplotlib.pyplot as plt
 
-from TSP.customEnv.envs.TSPenv import RegionEnv
-from TSP.main import GAMMA
+GAMMA = 0.9
 
 
 class TSPAgent():
@@ -16,25 +14,66 @@ class TSPAgent():
         #rewards
         self.rewards = collections.defaultdict(float)
         #transitions
-        self.transits = collections.defaultdict(collections.Counter)
+        self.transits = {}
         #value
         self.values = collections.defaultdict(float)
 
 #####################################################################################
     def play_n_random_steps(self, count):
+        back_home = False
         for _ in range(count):
             action = self.env.action_space.sample()
             #step format is
             # ((self.traveler_x, self.traveler_y), self.reward, self.done, {})
-            new_state, reward, is_done, _ = self.env.step(action)
-            self.rewards[(self.state, action, new_state)] = reward
+            # determine if city has already been visited
+            # in theory shouldnt happen bc agent will only be able to choose between a list of non visited cities
+            if action in self.env.sequence:
+                if(action==0 and self.env.steps==1):
+                    pass
+                else:
+                    continue
+
+            if (self.env.cities.get(action)['x'] == self.env.traveler_x and self.env.cities.get(action)['y'] == self.env.traveler_y):
+                continue
+
+            new_state, reward, is_done, __ = self.env.step(action)
+            coord = (self.env.cities.get(self.state)['x'], self.env.cities.get(self.state)['y'])
+
+            self.rewards[(coord, action, new_state)] = reward
             #transits aren't really relevant considering it's deterministic,
             #no probability that we'll take a different path than the one chosen
-            self.transits[(self.state, action)][new_state] += 1
+
+            self.transits[(coord, action)] = [new_state]
             self.state = self.env.reset() if is_done else new_state
 
         #plt.show()
 
+#at the end, the rewards dict has the following form (here grouped)
+    '''
+    ((2, 10), 2, (20, 90)) =82.0
+((2, 10), 1, (50, 30)) =52.0
+((2, 10), 4, (50, 50)) =62.48199740725323
+((2, 10), 3, (90, 30)) =90.24411338142782
+
+((20, 90), 3, (90, 30)) =92.19544457292888
+((20, 90), 1, (50, 30)) =67.08203932499369
+((20, 90), 4, (50, 50)) =50.0
+((20, 90), 0, (2, 10)) =82.0
+
+((90, 30), 4, (50, 50)) =44.721359549995796
+((90, 30), 0, (2, 10)) =90.24411338142782
+((90, 30), 1, (50, 30)) =40.0
+((90, 30), 2, (20, 90)) =92.19544457292888
+
+((50, 30), 0, (2, 10)) =52.0
+((50, 30), 2, (20, 90)) =67.08203932499369
+((50, 30), 3, (90, 30)) =40.0
+((50, 30), 4, (50, 50)) =20.0
+
+((50, 50), 0, (2, 10)) =62.48199740725323
+((50, 50), 1, (50, 30)) =20.0
+((50, 50), 2, (20, 90)) =50.0
+((50, 50), 3, (90, 30)) =44.721359549995796'''
 #####################################################################################
     #action value function
 
@@ -47,23 +86,24 @@ class TSPAgent():
     # 1. select the best action to perform from the state
     # 2. calculate the new value of the state on value iteration.
     def calc_action_value(self, state, action):
-        # extract transition counters for the given (state,action) tuple
-        # from the transitions table
         # dict has
         # --KEY : target state
         # --VAL : counter of experienced transitions
-        target_counts = self.transits[(state, action)]
+        #target_state = self.transits[(state, action)]
         # calculate the sum of all the times the action has been taken from this state
         #total = sum(target_counts.values())
         action_value = 0.0
+        coord = (self.env.cities.get(state)['x'], self.env.cities.get(state)['y'])
         # iterate for every target state that the action has landed on
-        for tgt_state, count in target_counts.items():
+        for src_state, tgt_state in self.transits.items():
             # get the reward for that [s,a,s'] thruple
-            reward = self.rewards[(state, action, tgt_state)]
+            if(src_state[0]!=coord):
+                 continue
+            reward = self.rewards[(coord, action, tgt_state[0])]
             # calculate the updated action value with bellman equation
             # nb, Q(s) =  (probability of landing in that state)*[immediate reward + discounted value for the target state]
             #removed the probability operand, useless here
-            action_value +=  (reward + GAMMA * self.values[tgt_state])
+            action_value += (reward + GAMMA * self.values[tgt_state[0]])
         return action_value
 
 #####################################################################################
@@ -96,7 +136,9 @@ class TSPAgent():
             action = self.select_action(state)
             new_state, reward, is_done, _ = env.step(action)
             self.rewards[(state, action, new_state)] = reward
-            self.transits[(state, action)][new_state] += 1
+
+
+            self.transits[(state, action)] = [new_state]
             total_reward += reward
             if is_done:
                 break
@@ -104,16 +146,27 @@ class TSPAgent():
         return total_reward
 
     def value_iteration(self):
+        state_values = []
+
         # loop over all states of the environment
-        for state in range(self.env.observation_space.n):
+        for state in range(self.env.action_space.n):
+            #empty the state_values array at the beginning
+            state_values.clear()
+            coord = self.env.cities.get(state)['x'], self.env.cities.get(state)['y']
+            print(state)
+            if(state==4):
+                print("eccoti qua")
             # for every state we calculate the values of the states
             # reachable from state, which will give us candidates for the value
             # of the state
-            state_values = [self.calc_action_value(state, action)
-                            for action in range(self.env.action_space.n)]
-            # update the value of the state with the maximum of the value_action
-            # calculated in the line before
-            self.values[state] = max(state_values)
+            for action in range(self.env.action_space.n):
+                if action==state:
+                    continue
+                state_values.append(self.calc_action_value(state,action))
+
+            # update the value of the state with the MIN of the value_action, since
+            #we're looking for the minimum path
+            self.values[state] = min(state_values)
 
 
 

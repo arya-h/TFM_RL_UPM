@@ -105,7 +105,8 @@ class Agent:
             #reachable from state, which will give us candidates for the value
             #of the state
             state_values = [self.calc_action_value(state, action)
-                            for action in range(self.env.action_space.n)]
+
+            for action in range(self.env.action_space.n)]
             #update the value of the state with the maximum of the value_action
             #calculated in the line before
             self.values[state] = max(state_values)

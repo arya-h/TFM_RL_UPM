@@ -40,12 +40,22 @@ class RegionEnv(gym.Env):
     #contains information about cities, name and coordinates
     self.cities = cities
 
-
+    #first implementation, but at the end the possible states are just a limited number
+    #of coordinates
     self.observation_space = spaces.Box(low=0, high=100, shape=(100, 100, 3))  # matrix
+    #second idea, not too sure about this : 1 dimensional array of coordinate tuples,
+    #not convinced
+
+    #self.observation_space = Discrete of tuples?  spaces.Tuple(spaces.Discrete(1), spaces.Discrete(1))
     #self.visited = []
     #matrix for pyplot representation
-    matr = np.ones(self.observation_space.shape) * 1
-    self.matrix = plt.matshow(matr)
+    #matr = np.ones(self.observation_space.shape) * 1
+    #self.matrix = plt.matshow(matr)
+    #self.matrix = plt.imshow(matr, origin="lower")
+
+    plt.plot()
+    plt.axis([0,100,0,100])
+    plt.show()
 
     self.numCities = numCities
     self.startCity = startCity
@@ -61,10 +71,10 @@ class RegionEnv(gym.Env):
     self.action_space = spaces.Discrete(numCities)
 
     #will determine if episode is finished
-    self.steps = numCities+1
+    self.steps = numCities
 
     # initial reward
-    self.reward = 0
+    #self.reward = 0
       
     #current solution
     self.sequence = [self.startCity]
@@ -78,8 +88,8 @@ class RegionEnv(gym.Env):
 
   def reset(self):
 
-    self.steps = self.numCities+1
-    self.reward = 0
+    self.steps = self.numCities
+    #self.reward = 0
     self.done = False
     #self.sequence = []
     self.sequence = [self.startCity]
@@ -88,8 +98,9 @@ class RegionEnv(gym.Env):
     self.traveler_y = self.cities.get(self.startCity)['y']
 
     # matrix for pyplot representation
-    matr = np.ones(self.observation_space.shape) * 1
-    self.matrix = plt.matshow(matr)
+    plt.plot()
+    plt.axis([0, 100, 0, 100])
+    plt.show()
 
     # plot
     for val in self.cities.values():
@@ -98,7 +109,7 @@ class RegionEnv(gym.Env):
       plt.annotate(val["city"], (val["x"], val["y"]))
 
     #the returned observed state is the initial coordinates
-    return (self.traveler_x, self.traveler_y)
+    return (self.startCity)
 
 
   def step(self, action):
@@ -106,11 +117,15 @@ class RegionEnv(gym.Env):
     #determine if action is doable
     assert action < self.numCities , "Invalid City ID"
 
-    #determine if city has already been visited
-    #in theory shouldnt happen bc agent will only be able to choose between a list of non visited cities
-    if action in self.sequence:
-      self.reward += 0
-      return ((self.traveler_x, self.traveler_y), self.reward, self.done, {})
+    # #determine if city has already been visited
+    # #in theory shouldnt happen bc agent will only be able to choose between a list of non visited cities
+    # if action in self.sequence:
+    #   self.reward += 0
+    #   return ((self.traveler_x, self.traveler_y), self.reward, self.done, {})
+    #
+    # if(cities.get(action)['x']==self.traveler_x and cities.get(action)['y']==self.traveler_y):
+    #   self.reward += 0
+    #   return ((self.traveler_x, self.traveler_y), self.reward, self.done, {})
 
     #add to sequence
     self.sequence.append(action)
@@ -120,7 +135,7 @@ class RegionEnv(gym.Env):
     dest_y = cities.get(action)['y']
 
     #subtract to reward, since we will use the one that maximimizes
-    self.reward -= self.calc_dist(self.traveler_x, self.traveler_y, dest_x, dest_y)
+    dist = self.calc_dist(self.traveler_x, self.traveler_y, dest_x, dest_y)
     #set new state of traveler
 
     # draw on canvas
@@ -145,8 +160,11 @@ class RegionEnv(gym.Env):
     if self.steps==0:
       self.done = True
 
+    #next state is the action : if im in state 0 (MAD) and perform action 3(TRN) my next state
+    #will be 3 (TRN)
 
-    return ((self.traveler_x, self.traveler_y), self.reward, self.done, {})
+
+    return (action, dist, self.done, {})
 
 
   def render(self, mode="human", close=False):
