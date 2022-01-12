@@ -32,10 +32,8 @@ if __name__ == "__main__":
 
 
     for _ in range(TEST_EPISODES):
-
-
         reward += agent.play_episode(test_env)
-        print("reward : {}, iter_no: {}".format(reward, _))
+        #print("reward : {}, iter_no: {}".format(reward, _))
 
     # next line to get the average reward over the group of episodes
     reward /= TEST_EPISODES
