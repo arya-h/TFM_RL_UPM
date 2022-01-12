@@ -1,6 +1,7 @@
 import gym
 import collections
 from tensorboardX import SummaryWriter
+import matplotlib.pyplot as plt
 
 from TSP.customEnv.envs.TSPagent import TSPAgent
 from TSP.customEnv.envs.TSPenv import RegionEnv
