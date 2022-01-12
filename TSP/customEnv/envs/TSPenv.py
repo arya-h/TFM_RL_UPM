@@ -55,13 +55,14 @@ class RegionEnv(gym.Env):
 
     plt.plot()
     plt.axis([0,100,0,100])
-    plt.show()
+
 
     self.numCities = numCities
     self.startCity = startCity
     #set initial coordinates of agent
     self.traveler_x = cities.get(startCity)['x']
     self.traveler_y = cities.get(startCity)['y']
+    self.state = startCity
 
     self.done = False
 
@@ -77,8 +78,8 @@ class RegionEnv(gym.Env):
     #self.reward = 0
       
     #current solution
-    self.sequence = [self.startCity]
-    #self.sequence = []
+    #self.sequence = [self.startCity]
+    self.sequence = []
     #plot
     for val in self.cities.values():
       # plot points and name of city
@@ -87,12 +88,14 @@ class RegionEnv(gym.Env):
 
 
   def reset(self):
+    #in this version state = simply one integer, the id in cities
 
     self.steps = self.numCities
     #self.reward = 0
     self.done = False
-    #self.sequence = []
-    self.sequence = [self.startCity]
+    self.sequence = []
+    #self.sequence = [self.startCity]
+    self.state = self.startCity
     #self.visited = []
     self.traveler_x = self.cities.get(self.startCity)['x']
     self.traveler_y = self.cities.get(self.startCity)['y']
@@ -100,7 +103,7 @@ class RegionEnv(gym.Env):
     # matrix for pyplot representation
     plt.plot()
     plt.axis([0, 100, 0, 100])
-    plt.show()
+
 
     # plot
     for val in self.cities.values():
@@ -116,16 +119,6 @@ class RegionEnv(gym.Env):
 
     #determine if action is doable
     assert action < self.numCities , "Invalid City ID"
-
-    # #determine if city has already been visited
-    # #in theory shouldnt happen bc agent will only be able to choose between a list of non visited cities
-    # if action in self.sequence:
-    #   self.reward += 0
-    #   return ((self.traveler_x, self.traveler_y), self.reward, self.done, {})
-    #
-    # if(cities.get(action)['x']==self.traveler_x and cities.get(action)['y']==self.traveler_y):
-    #   self.reward += 0
-    #   return ((self.traveler_x, self.traveler_y), self.reward, self.done, {})
 
     #add to sequence
     self.sequence.append(action)
@@ -180,10 +173,3 @@ class RegionEnv(gym.Env):
     dist = sqrt(((x2 - x1) ** 2) + ((y2 - y1) ** 2))
 
     return dist
-
-
-
-if __name__=="__main__":
-
-  env = RegionEnv(5, 0)
-  plt.show()

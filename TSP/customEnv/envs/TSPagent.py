@@ -1,12 +1,17 @@
 import collections
-import matplotlib.pyplot as plt
+import sys
 
 GAMMA = 0.9
+
 
 
 class TSPAgent():
     def __init__(self, env):
         self.env = env
+        self.bestPath  = {
+            'length' : sys.maxsize,
+            'sequence' : []
+        }
         self.state = self.env.reset()
         #state has the following format
         #x , y, reward, sequence, done
@@ -28,22 +33,23 @@ class TSPAgent():
             # determine if city has already been visited
             # in theory shouldnt happen bc agent will only be able to choose between a list of non visited cities
             if action in self.env.sequence:
-                if(action==0 and self.env.steps==1):
-                    pass
-                else:
-                    continue
-
-            if (self.env.cities.get(action)['x'] == self.env.traveler_x and self.env.cities.get(action)['y'] == self.env.traveler_y):
                 continue
+
+            #if im going from state x to state x
+            if (self.state == action):
+                continue
+
+            # if (self.env.cities.get(action)['x'] == self.env.traveler_x and self.env.cities.get(action)['y'] == self.env.traveler_y):
+            #     continue
 
             new_state, reward, is_done, __ = self.env.step(action)
             coord = (self.env.cities.get(self.state)['x'], self.env.cities.get(self.state)['y'])
 
-            self.rewards[(coord, action, new_state)] = reward
+            self.rewards[(self.state, action, new_state)] = reward
             #transits aren't really relevant considering it's deterministic,
             #no probability that we'll take a different path than the one chosen
 
-            self.transits[(coord, action)] = [new_state]
+            self.transits[(self.state, action)] = [new_state]
             self.state = self.env.reset() if is_done else new_state
 
         #plt.show()
@@ -89,22 +95,10 @@ class TSPAgent():
         # dict has
         # --KEY : target state
         # --VAL : counter of experienced transitions
-        #target_state = self.transits[(state, action)]
-        # calculate the sum of all the times the action has been taken from this state
-        #total = sum(target_counts.values())
-        action_value = 0.0
-        coord = (self.env.cities.get(state)['x'], self.env.cities.get(state)['y'])
-        # iterate for every target state that the action has landed on
-        for src_state, tgt_state in self.transits.items():
-            # get the reward for that [s,a,s'] thruple
-            if(src_state[0]!=coord):
-                 continue
-            reward = self.rewards[(coord, action, tgt_state[0])]
-            # calculate the updated action value with bellman equation
-            # nb, Q(s) =  (probability of landing in that state)*[immediate reward + discounted value for the target state]
-            #removed the probability operand, useless here
-            action_value += (reward + GAMMA * self.values[tgt_state[0]])
-        return action_value
+            tgt_state = self.transits[(state,action)]
+            reward = self.rewards[(state, action, tgt_state[0])]
+            action_value = (reward + GAMMA * self.values[tgt_state[0]])
+            return action_value
 
 #####################################################################################
 
@@ -114,9 +108,24 @@ class TSPAgent():
     # it returns the action with the largest value, which will be chosen
     def select_action(self, state):
         best_action, best_value = None, None
+
+
         for action in range(self.env.action_space.n):
+
+            if (action in self.env.sequence):
+                continue
+
+            #if im going from state x to state x
+            if(state==action):
+                continue
+
+
+            if(action == self.env.startCity and self.env.steps!=1):
+                continue
+
+
             action_value = self.calc_action_value(state, action)
-            if best_value is None or best_value < action_value:
+            if best_value is None or best_value > action_value:
                 best_value = action_value
                 best_action = action
         return best_action
@@ -128,12 +137,15 @@ class TSPAgent():
 
     # logic : just loop through states
 
+
     def play_episode(self, env):
         total_reward = 0.0
         state = env.reset()
         while True:
             # selects the current best action
             action = self.select_action(state)
+            if(action in self.env.sequence):
+                continue
             new_state, reward, is_done, _ = env.step(action)
             self.rewards[(state, action, new_state)] = reward
 
@@ -143,6 +155,10 @@ class TSPAgent():
             if is_done:
                 break
             state = new_state
+
+        if(total_reward < self.bestPath.get('length')):
+            self.bestPath['length'] = total_reward
+            self.bestPath['sequence'] = self.env.sequence
         return total_reward
 
     def value_iteration(self):
