@@ -41,6 +41,7 @@ if __name__ == "__main__":
     # next line to get the average reward over the group of episodes
     reward /= TEST_EPISODES
     print("reward : {}".format(reward))
+    plt.close()
 
     print("best path length : {} // sequence : {}".format(agent.bestPath['length'], agent.bestPath['sequence']) )
     
