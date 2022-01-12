@@ -24,8 +24,10 @@ if __name__ == "__main__":
     #agent.value_iteration()
 
 
-    #while True:
-    agent.play_n_random_steps(300)
+    #number of steps must be proportionate to the number of nodes, since it's basically doing all the combinations needed for the transitions dict
+    #however, considering that the matrix has the following format (source_state, action) = target_state, but action and target_state are the same
+    #playing random steps is a formality in the deterministic model, but fundamental if i introduce probability and randomness like in frozenLake
+    agent.play_n_random_steps(500)
     agent.value_iteration()
     reward = 0.0
 
