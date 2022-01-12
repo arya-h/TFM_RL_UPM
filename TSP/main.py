@@ -40,6 +40,25 @@ if __name__ == "__main__":
     print("reward : {}, iter_no: {}".format(reward))
 
     print("best path length : {} // sequence : {}".format(agent.bestPath['length'], agent.bestPath['sequence']) )
+    
+    #draw on canvas
+    for _ in range(len(seq)):
+        if(_+1 == len(seq)):
+            break
+        #coord1
+        st_1 = seq[_]
+        pt1 = (test_env.cities.get(st_1)['x'], test_env.cities.get(st_1)['y'])
+
+        #coord2
+        st_2 = seq[_+1]
+        pt2 = (test_env.cities.get(st_2)['x'], test_env.cities.get(st_2)['y'])
+
+        x_val = [pt1[0], pt2[0]]
+        y_val = [pt1[1], pt2[1]]
+
+        plt.plot(x_val, y_val)
+
+    plt.show()
 
     #writer.add_scalar("reward", reward, iter_no)
     # if reward > best_reward:
