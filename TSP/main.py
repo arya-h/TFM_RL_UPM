@@ -43,6 +43,12 @@ if __name__ == "__main__":
 
     print("best path length : {} // sequence : {}".format(agent.bestPath['length'], agent.bestPath['sequence']) )
     
+    #best sequence is
+
+    seq = agent.bestPath['sequence']
+    seq.insert(0, agent.env.startCity)
+    print("len : {}, seq : {}".format(len(seq), seq))
+    
     #draw on canvas
     for _ in range(len(seq)):
         if(_+1 == len(seq)):
