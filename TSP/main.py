@@ -11,18 +11,15 @@ GAMMA = 0.9
 TEST_EPISODES = 10
 
 if __name__ == "__main__":
-    test_env = RegionEnv(5,0)
+    test_env = RegionEnv(5,2)
     agent = TSPAgent(test_env)
     writer = SummaryWriter(comment="-v-iteration")
 
     iter_no = 0
     best_reward = 0
 
-
-    #agent.play_n_random_steps(300)
-
-
-    #agent.value_iteration()
+    #info about current run
+    print("There are {} cities on the map. \nThe starting city is {}".format(test_env.numCities, test_env.cities.get(test_env.startCity)['city'] ))
 
 
     #number of steps must be proportionate to the number of nodes, since it's basically doing all the combinations needed for the transitions dict
@@ -49,9 +46,24 @@ if __name__ == "__main__":
 
     seq = agent.bestPath['sequence']
     seq.insert(0, agent.env.startCity)
-    print("len : {}, seq : {}".format(len(seq), seq))
+    print("The path is the following :")
+    strSeq = ""
+    for city in seq:
+        strSeq += test_env.cities.get(city)['city']
+        strSeq += " --> "
+
+    strSeq = strSeq[0:len(strSeq)-5]
+    print(strSeq)
+
     
     #draw on canvas
+
+    #first cities
+    for val in test_env.cities.values():
+        # plot points and name of city
+        plt.scatter(val["x"], val["y"])
+        plt.annotate(val["city"], (val["x"], val["y"]))
+
     for _ in range(len(seq)):
         if(_+1 == len(seq)):
             break

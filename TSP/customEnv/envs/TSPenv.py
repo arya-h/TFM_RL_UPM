@@ -78,7 +78,8 @@ class RegionEnv(gym.Env):
     #self.reward = 0
       
     #current solution
-    #self.sequence = [self.startCity]
+    #initial sequence is empty, i will insert in front of the
+    #result sequence the startCity
     self.sequence = []
     #plot
     for val in self.cities.values():

@@ -169,9 +169,6 @@ class TSPAgent():
             #empty the state_values array at the beginning
             state_values.clear()
             coord = self.env.cities.get(state)['x'], self.env.cities.get(state)['y']
-            print(state)
-            if(state==4):
-                print("eccoti qua")
             # for every state we calculate the values of the states
             # reachable from state, which will give us candidates for the value
             # of the state
