@@ -128,35 +128,31 @@ class RegionEnv(gym.Env):
     dest_x = cities.get(action)['x']
     dest_y = cities.get(action)['y']
 
-    #subtract to reward, since we will use the one that maximimizes
     dist = self.calc_dist(self.traveler_x, self.traveler_y, dest_x, dest_y)
-    #set new state of traveler
 
+    #commented bc it was slowing down the process
     # draw on canvas
-    pt1 = [self.traveler_x, self.traveler_y]
-    pt2 = [dest_x, dest_y]
+    # pt1 = [self.traveler_x, self.traveler_y]
+    # pt2 = [dest_x, dest_y]
+    #
+    # x_val = [pt1[0], pt2[0]]
+    # y_val = [pt1[1], pt2[1]]
+    #
+    # plt.plot(x_val, y_val)
 
-    x_val = [pt1[0], pt2[0]]
-    y_val = [pt1[1], pt2[1]]
-
-    plt.plot(x_val, y_val)
-
+    # set new coords of traveler
     self.traveler_x = dest_x
     self.traveler_y = dest_y
-
-
-
 
     #traveler has made a trip to a city
     self.steps-=1
 
-    #determine if trip is done
+    #determine if whole journey is done
     if self.steps==0:
       self.done = True
 
     #next state is the action : if im in state 0 (MAD) and perform action 3(TRN) my next state
     #will be 3 (TRN)
-
 
     return (action, dist, self.done, {})
 

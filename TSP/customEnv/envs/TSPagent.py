@@ -3,8 +3,6 @@ import sys
 
 GAMMA = 0.9
 
-
-
 class TSPAgent():
     def __init__(self, env):
         self.env = env
@@ -56,30 +54,59 @@ class TSPAgent():
 
 #at the end, the rewards dict has the following form (here grouped)
     '''
-    ((2, 10), 2, (20, 90)) =82.0
-((2, 10), 1, (50, 30)) =52.0
-((2, 10), 4, (50, 50)) =62.48199740725323
-((2, 10), 3, (90, 30)) =90.24411338142782
+(2, 3, 3) = 92.19544457292888
+(3, 0, 0) = 90.24411338142782
+(0, 4, 4) = 62.48199740725323
+(4, 1, 1) = 20.0
+(1, 2, 2) = 67.08203932499369
+(2, 0, 0) = 82.0
+(0, 1, 1) = 52.0
+(1, 3, 3) = 40.0
+(3, 2, 2) = 92.19544457292888
+(2, 4, 4) = 50.0
+(3, 4, 4) = 44.721359549995796
+(0, 3, 3) = 90.24411338142782
+(2, 1, 1) = 67.08203932499369
+(1, 4, 4) = 20.0
+(4, 3, 3) = 44.721359549995796
+(3, 1, 1) = 40.0
+(1, 0, 0) = 52.0
+(0, 2, 2) = 82.0
+(4, 2, 2) = 50.0
+(4, 0, 0) = 62.48199740725323
 
-((20, 90), 3, (90, 30)) =92.19544457292888
-((20, 90), 1, (50, 30)) =67.08203932499369
-((20, 90), 4, (50, 50)) =50.0
-((20, 90), 0, (2, 10)) =82.0
+#and the transits table
+(2, 3) =  [3]
+(3, 0) =  [0]
+(0, 4) =  [4]
+(4, 1) =  [1]
+(1, 2) =  [2]
+(2, 0) =  [0]
+(0, 1) =  [1]
+(1, 3) =  [3]
+(3, 2) =  [2]
+(2, 4) =  [4]
+(3, 4) =  [4]
+(0, 3) =  [3]
+(2, 1) =  [1]
+(1, 4) =  [4]
+(4, 3) =  [3]
+(3, 1) =  [1]
+(1, 0) =  [0]
+(0, 2) =  [2]
+(4, 2) =  [2]
+(4, 0) =  [0]
 
-((90, 30), 4, (50, 50)) =44.721359549995796
-((90, 30), 0, (2, 10)) =90.24411338142782
-((90, 30), 1, (50, 30)) =40.0
-((90, 30), 2, (20, 90)) =92.19544457292888
+#and the values table
+1 =  20.0
+2 =  50.0
+3 =  44.721359549995796
+4 =  38.0
+0 =  52.0
 
-((50, 30), 0, (2, 10)) =52.0
-((50, 30), 2, (20, 90)) =67.08203932499369
-((50, 30), 3, (90, 30)) =40.0
-((50, 30), 4, (50, 50)) =20.0
-
-((50, 50), 0, (2, 10)) =62.48199740725323
-((50, 50), 1, (50, 30)) =20.0
-((50, 50), 2, (20, 90)) =50.0
-((50, 50), 3, (90, 30)) =44.721359549995796'''
+'''
+    
+    
 #####################################################################################
     #action value function
 
@@ -94,7 +121,7 @@ class TSPAgent():
     def calc_action_value(self, state, action):
         # dict has
         # --KEY : target state
-        # --VAL : counter of experienced transitions
+        # --VAL : counter of experienced transitions (will explore in branch 'randomness')
             tgt_state = self.transits[(state,action)]
             reward = self.rewards[(state, action, tgt_state[0])]
             action_value = (reward + GAMMA * self.values[tgt_state[0]])
@@ -105,7 +132,8 @@ class TSPAgent():
     # decides the best action to take from a given state
     # it iterates over all possible actions in the env and calculates
     # the value for every action.
-    # it returns the action with the largest value, which will be chosen
+    # it returns the action with the lowest value (since we are aiming to minimize the length
+    # of the path), which will be chosen
     def select_action(self, state):
         best_action, best_value = None, None
 
@@ -137,18 +165,17 @@ class TSPAgent():
 
     # logic : just loop through states
 
-
     def play_episode(self, env):
         total_reward = 0.0
         state = env.reset()
         while True:
             # selects the current best action
             action = self.select_action(state)
+            #excludes actions already selected
             if(action in self.env.sequence):
                 continue
             new_state, reward, is_done, _ = env.step(action)
             self.rewards[(state, action, new_state)] = reward
-
 
             self.transits[(state, action)] = [new_state]
             total_reward += reward
