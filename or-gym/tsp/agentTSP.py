@@ -21,7 +21,7 @@ class AgentTSP:
         # rewards table
         self.rewards = collections.defaultdict(int)
         # transitions table
-        self.transits = collections.defaultdict(collections.Counter)
+        self.transits = collections.defaultdict()
         # value table
         self.values = collections.defaultdict(float)
 
@@ -32,13 +32,15 @@ class AgentTSP:
     def play_n_random_steps(self, count):
         for _ in range(count):
             action = self.env.action_space.sample()
-
+            state = self.state.tolist()
+            state_tuple = tuple(state)
             new_state, reward, is_done, _ = self.env.step(action)
-            as_bytes_state = self.state.tobytes()
-            as_bytes_newstate = new_state.tobytes()
-            self.rewards[(as_bytes_state, action, as_bytes_newstate)] = reward
+            new_state_tuple = tuple(new_state.tolist())
 
-            self.transits[(as_bytes_state, action)][as_bytes_newstate] += 1
+            as_bytes_newstate = new_state.tobytes()
+            self.rewards[(state_tuple, action, new_state_tuple)] = reward
+
+            self.transits[(state_tuple, action)] = new_state_tuple
             self.state = self.env.reset() if is_done else new_state
 
     #calculates the value of the action from the state using
@@ -55,18 +57,24 @@ class AgentTSP:
         #dict has
         # --KEY : target state
         # --VAL : counter of experienced transitions
-        target_counts = self.transits[(state, action)]
+        #target_counts = self.transits[(state, action)]
         #calculate the sum of all the times the action has been taken from this state
-        total = sum(target_counts.values())
+        #total = sum(target_counts.values())
         action_value = 0.0
         #iterate for every target state that the action has landed on
-        for tgt_state, count in target_counts.items():
+        #for tgt_state in :
             #get the reward for that [s,a,s'] thruple
+            #remove probabilities
 
-            reward = self.rewards[(state, action, tgt_state)]
-            #calculate the updated action value with bellman equation
-            #nb, Q(s) =  (probability of landing in that state)*[immediate reward + discounted value for the target state]
-            action_value += (count / total) * (reward + GAMMA * self.values[tgt_state])
+
+        #target state is single, deterministic environment
+        tgt_state = self.transits[state, action]
+
+        reward = self.rewards[(state, action, tgt_state)]
+        #calculate the updated action value with bellman equation
+        #nb, Q(s) =  (probability of landing in that state)*[immediate reward + discounted value for the target state]
+        #action_value += (count / total) * (reward + GAMMA * self.values[tgt_state])
+        action_value += (reward + GAMMA * self.values[tgt_state])
         return action_value
 
     # decides the best action to take from a given state
@@ -74,10 +82,11 @@ class AgentTSP:
     # the value for every action.
     # it returns the action with the largest value, which will be chosen
     def select_action(self, state):
-        best_action, best_value = None, None
+        #best_value set to 50000 to guarantee it excludes negative values in the if
+        best_action, best_value = None, 50000
         for action in range(self.env.action_space.n):
             action_value = self.calc_action_value(state, action)
-            if best_value is None or best_value < action_value:
+            if best_value > action_value and action_value>0:
                 best_value = action_value
                 best_action = action
         return best_action
@@ -92,38 +101,57 @@ class AgentTSP:
     def play_episode(self, env):
         total_reward = 0.0
         state = env.reset()
+        #print(f"inside play: {env.state}")
+        path = [env.state[0]]
+
         while True:
             # selects the current best action
-            state_bytes = state.tobytes()
-            action = self.select_action(state_bytes)
+            state_tuple = tuple(state.tolist())
+            action = self.select_action(state_tuple)
+            path.append(action)
+            #print(action)
             new_state, reward, is_done, _ = env.step(action)
-            new_state_bytes = new_state.tobytes()
+            new_state_tuple = tuple(new_state.tolist())
 
-            self.rewards[(state_bytes, action, new_state_bytes)] = reward
-            self.transits[(state_bytes, action)][new_state_bytes] += 1
+            self.rewards[(state_tuple, action, new_state_tuple)] = reward
+            self.transits[(state_tuple, action)] = new_state_tuple
             total_reward += reward
             if is_done:
                 break
             state = new_state
-        return total_reward
+        return total_reward, path
 
 
     def value_iteration(self):
         # loop over all states of the environment
 
         #for state in range(self.env.observation_space.shape):
-        for state in range(self.env.observation_space.shape[0]):
+        for state,count in self.transits.keys():
             #for every state we calculate the values of the states
             #reachable from state, which will give us candidates for the value
             #of the state
             #as_bytes_state = state.tobytes()
 
-            state_values = [self.calc_action_value(state, action)
+            state_values = [self.calc_action_value(state, action) for action in range(self.env.action_space.n)]
 
-            for action in range(self.env.action_space.n)]
+            #in order to maximize the reward
+            #anytime you take an action the reward is
+            #if distance = 10, reward = -10
+            #negative reward for repeated city : large neg number.
             #update the value of the state with the maximum of the value_action
             #calculated in the line before
-            self.values[state] = max(state_values)
+
+            #also try with min
+            #select min value that's not negative
+            min = 100000
+            for val in state_values:
+                if val<0:
+                    continue
+                else:
+                    if val < min:
+                        min = val
+
+            self.values[state] = min
 
 if __name__ == "__main__":
     #test_env = gym.make(ENV_NAME)
@@ -133,31 +161,60 @@ if __name__ == "__main__":
     #writer = SummaryWriter(comment="-v-iteration")
     iter_no = 0
     best_reward = -4000
+    print(agent.env.distance_matrix)
 
     iter_no += 1
     # perform N steps to fill reward & transitions tables
-    agent.play_n_random_steps(10000)
+    agent.play_n_random_steps(50000)
     print("I have finished playing my random steps")
     # # run value iteration over all states
-    print(agent.env.observation_space.shape[0])
-    print( type(agent.env.observation_space))
+    #print(agent.env.observation_space.shape[0])
+    #print( type(agent.env.observation_space))
     agent.value_iteration()
-    #
+    best_positive_reward=0
     reward = 0.0
+    positive=False
+
     while True:
-        for _ in range(TEST_EPISODES):
-            # play a full episode, record the sum of the rewards to compare it
-            # with next episodes
-            reward += agent.play_episode(test_env)
-        # next line to get the average reward over the group of episodes
-        reward /= TEST_EPISODES
-        #writer.add_scalar("reward", reward, iter_no)
-        if reward > best_reward:
-            print("Best reward updated %.3f -> %.3f" % (best_reward, reward))
-            best_reward = reward
-            #what is the actual best first path?
-            agent.env.plot_network()
-            #it converges over the actual worst possible path, not the shortest one
+        newReward, path = agent.play_episode(test_env)
+        if(best_reward < 0 and newReward > best_reward and positive==False):
+            best_reward = newReward
+            if (best_reward > 0) :
+                print(f"{newReward} --> {path}")
+                agent.env.render(mode="human")
+                positive = True
+                best_reward = newReward
+                continue
+
+        elif newReward < best_reward and newReward>0:
+            best_reward = newReward
+            print(f"{newReward} --> {path}")
+            agent.env.render(mode="human")
 
 
-    # writer.close()
+    # while True:
+    #     newReward, path = agent.play_episode(test_env)
+    #     #print(f"{newReward} and path = {path}")
+    #     if newReward < best_reward and newReward > 0:
+    #         print(f"Path is {path}")
+    #         print("Best reward updated %.3f -> %.3f" % (best_reward, newReward))
+    #         best_reward = newReward
+    #         agent.env.plot_network()
+
+        #print(path)
+        # if (newReward <0):
+        #     #best_reward = newReward
+        #     if(newReward > best_reward):
+        #         print(f"Path is {path}")
+        #         print("Best reward updated %.3f -> %.3f" % (best_reward, newReward))
+        #         best_reward = newReward
+        #         # what is the actual best first path?
+        #         #agent.env.plot_network()
+        #         #print(agent.state)
+        # elif (newReward > 0):
+        #
+        #     if(newReward < best_reward and best_reward):
+
+                # what is the actual best first path?
+                #agent.env.plot_network()
+                # print(agent.state)

@@ -18,8 +18,10 @@ class TSPAgent():
 
         #rewards
         self.rewards = collections.defaultdict(float)
-        #transitions
-        self.transits = {}
+        #in the randomness version we use the same data struct as frozen
+        #lake to record the number of times it lands on a certain state
+        # transitions table
+        self.transits = collections.defaultdict(collections.Counter)
         #value
         self.values = collections.defaultdict(float)
 

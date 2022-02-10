@@ -212,14 +212,21 @@ class TSPDistCost(TSPEnv):
     '''
 
     def __init__(self, *args, **kwargs):
-        self.N = 10
+        self.N = 6
+        #2 opt
+        #1- if in state [..] the agent will learn that choosign any of the actions of revisiting
+        #is negative. when running the policy, no matter what it will not make that choice.
+
+        #2- if in city N,
         self.invalid_action_cost = -100
         self.mask = False
         utils.assign_env_config(self, kwargs)
         self.nodes = np.arange(self.N)
         self.coords = self._generate_coordinates()
         self.distance_matrix = self._get_distance_matrix()
+        #print(self.distance_matrix)
 
+        #self.obs_dim = 1 + self.N
         self.obs_dim = 1 + self.N
         obs_space = spaces.Box(-1, self.N, shape=(self.obs_dim,), dtype=np.int32)
         if self.mask:
@@ -320,7 +327,7 @@ class TSPDistCost(TSPEnv):
         self.adjacency_matrix.astype(int)
 
     def _generate_coordinates(self):
-        n = np.linspace(0, 2 * np.pi, self.N + 1)
+        n = np.linspace(0, 2 * np.pi +3, self.N + 1)
         x = np.cos(n)
         y = np.sin(n)
         return np.vstack([x, y])
@@ -328,7 +335,8 @@ class TSPDistCost(TSPEnv):
     def _get_node_distance(self, N0, N1):
         return np.sqrt(np.power(N0[0] - N1[0], 2) + np.power(N0[1] - N1[1], 2))
 
-    def plot_network(self, offset=(0.02, 0.02)):
+    def render(self, mode="human"):
+        offset = (0.02, 0.02)
         coords = self._generate_coordinates()
         fig, ax = plt.subplots(figsize=(12, 8))
         ax.scatter(coords[0], coords[1], s=40)
@@ -339,11 +347,28 @@ class TSPDistCost(TSPEnv):
                 # dis = np.sqrt(np.power(line[0, 0] - line[1, 0], 2) +
                 #               np.power(line[0, 1] - line[1, 1], 2))
                 ax.plot(line[:, 0], line[:, 1], c='g', zorder=-1)
-            #         ax.arrow(line[0, 0], line[0, 1], line[1, 0], line[1, 1])
-            ax.annotate(r"$N_{:d}$".format(n), xy=(line[0] + offset), zorder=2)
+                #ax.arrow(line[0, 0], line[0, 1], line[1, 0], line[1, 1])
+                ax.annotate(r"$N_{:d}$".format(n), xy=(line[0] + offset), zorder=2)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         plt.show()
+
+    def plot_network(self, offset=(0.02, 0.02)):
+        coords = self._generate_coordinates()
+        fig, ax = plt.subplots(figsize=(12, 8))
+        ax.scatter(coords[0], coords[1], s=40)
+        # for n, c in self.node_dict.items():
+        #     for k in c:
+        #         line = np.vstack([coords[:, n], coords[:, k]])
+        #         dis = self._get_node_distance(line[0], line[1])
+        #         # dis = np.sqrt(np.power(line[0, 0] - line[1, 0], 2) +
+        #         #               np.power(line[0, 1] - line[1, 1], 2))
+        #         ax.plot(line[:, 0], line[:, 1], c='g', zorder=-1)
+        #         #ax.arrow(line[0, 0], line[0, 1], line[1, 0], line[1, 1])
+        #         ax.annotate(r"$N_{:d}$".format(n), xy=(line[0] + offset), zorder=2)
+        # ax.xaxis.set_visible(False)
+        # ax.yaxis.set_visible(False)
+        # plt.show()
 
     def step(self, action):
         return self._STEP(action)

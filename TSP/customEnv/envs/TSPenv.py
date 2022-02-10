@@ -46,7 +46,7 @@ class RegionEnv(gym.Env):
     #second idea, not too sure about this : 1 dimensional array of coordinate tuples,
     #not convinced
 
-    #self.observation_space = Discrete of tuples?  spaces.Tuple(spaces.Discrete(1), spaces.Discrete(1))
+
     #self.visited = []
     #matrix for pyplot representation
     #matr = np.ones(self.observation_space.shape) * 1
@@ -55,7 +55,6 @@ class RegionEnv(gym.Env):
 
     plt.plot()
     plt.axis([0,100,0,100])
-
 
     self.numCities = numCities
     self.startCity = startCity
