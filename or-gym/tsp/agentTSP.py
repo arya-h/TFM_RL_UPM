@@ -1,5 +1,6 @@
 import gym
 import collections
+import pickle
 from tensorboardX import SummaryWriter
 import or_gym
 from matplotlib import pyplot as plt
@@ -56,16 +57,11 @@ class AgentTSP:
         #from the transitions table
         #dict has
         # --KEY : target state
-        # --VAL : counter of experienced transitions
-        #target_counts = self.transits[(state, action)]
-        #calculate the sum of all the times the action has been taken from this state
-        #total = sum(target_counts.values())
+
         action_value = 0.0
-        #iterate for every target state that the action has landed on
         #for tgt_state in :
             #get the reward for that [s,a,s'] thruple
             #remove probabilities
-
 
         #target state is single, deterministic environment
         tgt_state = self.transits[state, action]
@@ -130,18 +126,9 @@ class AgentTSP:
             #for every state we calculate the values of the states
             #reachable from state, which will give us candidates for the value
             #of the state
-            #as_bytes_state = state.tobytes()
 
             state_values = [self.calc_action_value(state, action) for action in range(self.env.action_space.n)]
 
-            #in order to maximize the reward
-            #anytime you take an action the reward is
-            #if distance = 10, reward = -10
-            #negative reward for repeated city : large neg number.
-            #update the value of the state with the maximum of the value_action
-            #calculated in the line before
-
-            #also try with min
             #select min value that's not negative
             min = 100000
             for val in state_values:
@@ -153,31 +140,39 @@ class AgentTSP:
 
             self.values[state] = min
 
+def display_distances(matrix, path):
+    print("Distances in path :")
+    for _ in range(1,len(path)):
+        dist = matrix[path[_]][path[_-1]]
+        print(f"{path[_-1]} --> {path[_]} : {dist}")
+
+
 if __name__ == "__main__":
-    #test_env = gym.make(ENV_NAME)
+
     #reduce nodes
     test_env = TSPDistCost()
     agent = AgentTSP()
-    #writer = SummaryWriter(comment="-v-iteration")
     iter_no = 0
     best_reward = -4000
     print(agent.env.distance_matrix)
 
     iter_no += 1
     # perform N steps to fill reward & transitions tables
-    agent.play_n_random_steps(50000)
+    agent.play_n_random_steps(300000)
     print("I have finished playing my random steps")
     # # run value iteration over all states
-    #print(agent.env.observation_space.shape[0])
-    #print( type(agent.env.observation_space))
     agent.value_iteration()
+    # save data structures with pickle
+    filename = "agent_regular_value_iteration"
+    outfile = open(filename, "wb")
+    pickle.dump(agent, outfile)
+    outfile.close()
+
     best_positive_reward=0
     reward = 0.0
     positive=False
 
     #given the path it will determine the single distances with the distance matrix
-
-
 
     while True:
         newReward, path = agent.play_episode(test_env)
@@ -185,7 +180,8 @@ if __name__ == "__main__":
             best_reward = newReward
             if (best_reward > 0) :
                 print(f"{newReward} --> {path}")
-                agent.env.render(mode="human")
+                agent.env.render_custom(path)
+                display_distances(agent.env.distance_matrix, path)
                 positive = True
                 best_reward = newReward
                 continue
@@ -193,7 +189,8 @@ if __name__ == "__main__":
         elif newReward < best_reward and newReward>0:
             best_reward = newReward
             print(f"{newReward} --> {path}")
-            agent.env.render(mode="human")
+            display_distances(agent.env.distance_matrix, path)
+            agent.env.render_custom(path)
 
 
     # while True:

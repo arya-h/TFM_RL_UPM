@@ -1,5 +1,6 @@
 import gym
 import collections
+import pickle
 from tensorboardX import SummaryWriter
 import or_gym
 from matplotlib import pyplot as plt
@@ -139,25 +140,42 @@ class AgentTSP:
                 val = reward + GAMMA * self.values[(tgt_state, best_action)]
                 self.values[(state, action)] = val
 
+def display_distances(matrix, path):
+    print("Distances in path :")
+    for _ in range(1,len(path)):
+        dist = matrix[path[_]][path[_-1]]
+        print(f"{path[_-1]} --> {path[_]} : {dist}")
 
 if __name__ == "__main__":
     # test_env = gym.make(ENV_NAME)
     # reduce nodes
     test_env = TSPDistCost()
-    agent = AgentTSP()
-    iter_no = 0
-    best_reward = -4000
-    print(agent.env.distance_matrix)
+    # agent = AgentTSP()
+    # iter_no = 0
+    #
+    #
+    # iter_no += 1
+    # # perform N steps to fill reward & transitions tables
+    # agent.play_n_random_steps(200000)
+    # print("I have finished playing my random steps")
+    # # # run value iteration over all states
+    # agent.value_iteration()
 
-    iter_no += 1
-    # perform N steps to fill reward & transitions tables
-    agent.play_n_random_steps(50000)
-    print("I have finished playing my random steps")
-    # # run value iteration over all states
-    agent.value_iteration()
+    #save data structures with pickle
+    # filename = "agent_Qlearn"
+    # outfile = open(filename, "wb")
+    # pickle.dump(agent, outfile)
+    # outfile.close()
+    #
+    # exit(0)
+    infile = open("agent_Qlearn", "rb")
+    agent = pickle.load(infile)
+    infile.close()
     best_positive_reward = 0
     reward = 0.0
     positive = False
+    best_reward = -4000
+    # print(agent.env.distance_matrix)
 
     # given the path it will determine the single distances with the distance matrix
 
@@ -168,8 +186,8 @@ if __name__ == "__main__":
             if (best_reward > 0) :
                 print(f"{newReward} --> {path}")
                 #distances can be extracted from the distance matrix
-
-                agent.env.render(mode="human")
+                display_distances(agent.env.distance_matrix, path)
+                agent.env.render_custom(path)
                 positive = True
                 best_reward = newReward
                 continue
@@ -177,31 +195,7 @@ if __name__ == "__main__":
         elif newReward < best_reward and newReward>0:
             best_reward = newReward
             print(f"{newReward} --> {path}")
-            agent.env.render(mode="human")
+            display_distances(agent.env.distance_matrix, path)
+            #agent.env.render_custom(mode="human", path)
+            agent.env.render_custom(path)
 
-    # while True:
-    #     newReward, path = agent.play_episode(test_env)
-    #     #print(f"{newReward} and path = {path}")
-    #     if newReward < best_reward and newReward > 0:
-    #         print(f"Path is {path}")
-    #         print("Best reward updated %.3f -> %.3f" % (best_reward, newReward))
-    #         best_reward = newReward
-    #         agent.env.plot_network()
-
-    # print(path)
-    # if (newReward <0):
-    #     #best_reward = newReward
-    #     if(newReward > best_reward):
-    #         print(f"Path is {path}")
-    #         print("Best reward updated %.3f -> %.3f" % (best_reward, newReward))
-    #         best_reward = newReward
-    #         # what is the actual best first path?
-    #         #agent.env.plot_network()
-    #         #print(agent.state)
-    # elif (newReward > 0):
-    #
-    #     if(newReward < best_reward and best_reward):
-
-    # what is the actual best first path?
-    # agent.env.plot_network()
-    # print(agent.state)

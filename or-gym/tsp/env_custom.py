@@ -212,7 +212,7 @@ class TSPDistCost(TSPEnv):
     '''
 
     def __init__(self, *args, **kwargs):
-        self.N = 6
+        self.N = 7
         #2 opt
         #1- if in state [..] the agent will learn that choosign any of the actions of revisiting
         #is negative. when running the policy, no matter what it will not make that choice.
@@ -327,28 +327,62 @@ class TSPDistCost(TSPEnv):
         self.adjacency_matrix.astype(int)
 
     def _generate_coordinates(self):
-        n = np.linspace(0, 2 * np.pi +3, self.N + 1)
-        x = np.cos(n)
-        y = np.sin(n)
+        #n = np.linspace(0, 2 * np.pi +3, self.N + 1)
+        # n = np.linspace(0, 25, self.N + 1)
+        # x = np.sin(n+7)
+        # y = np.cos(n+0.8)
+        xL = [0.34,-0.99, 0.8, -0.6, 0.5, -0.2, 0.23]
+        yL = [0,    0.2,  0.3,  0,  -0.25,0.87, 0.03]
+
+        x = np.array(xL)
+        y = np.array(yL)
+
         return np.vstack([x, y])
 
     def _get_node_distance(self, N0, N1):
         return np.sqrt(np.power(N0[0] - N1[0], 2) + np.power(N0[1] - N1[1], 2))
+
+    def render_custom(self, path):
+        coords = self._generate_coordinates()
+        fig, ax = plt.subplots(figsize=(12, 8))
+        ax.scatter(coords[0], coords[1], s=40)
+        #annotate number of node
+        for _ in range(len(path)):
+            pt_x = coords[0][path[_]]
+            pt_y = coords[1][path[_]]
+            plt.text(pt_x, pt_y, f"N_{path[_]}")
+
+        #print(coords)
+        for _ in range(1, len(path)):
+            pt1_x = coords[0][path[_-1]]
+            pt1_y = coords[1][path[_-1]]
+            pt2_x = coords[0][path[_]]
+            pt2_y = coords[1][path[_]]
+
+            x_values = [pt1_x, pt2_x]
+            y_values = [pt1_y, pt2_y]
+
+            plt.plot(x_values, y_values)
+
+        ax.xaxis.set_visible(True)
+        ax.yaxis.set_visible(True)
+        plt.show()
+
 
     def render(self, mode="human"):
         offset = (0.02, 0.02)
         coords = self._generate_coordinates()
         fig, ax = plt.subplots(figsize=(12, 8))
         ax.scatter(coords[0], coords[1], s=40)
-        for n, c in self.node_dict.items():
-            for k in c:
-                line = np.vstack([coords[:, n], coords[:, k]])
-                dis = self._get_node_distance(line[0], line[1])
-                # dis = np.sqrt(np.power(line[0, 0] - line[1, 0], 2) +
-                #               np.power(line[0, 1] - line[1, 1], 2))
-                ax.plot(line[:, 0], line[:, 1], c='g', zorder=-1)
-                #ax.arrow(line[0, 0], line[0, 1], line[1, 0], line[1, 1])
-                ax.annotate(r"$N_{:d}$".format(n), xy=(line[0] + offset), zorder=2)
+        # for n, c in self.node_dict.items():
+        #     for k in c:
+        #         line = np.vstack([coords[:, n], coords[:, k]])
+        #         dis = self._get_node_distance(line[0], line[1])
+        #         # dis = np.sqrt(np.power(line[0, 0] - line[1, 0], 2) +
+        #         #               np.power(line[0, 1] - line[1, 1], 2))
+        #         ax.plot(line[:, 0], line[:, 1], c='g', zorder=-1)
+        #         #ax.arrow(line[0, 0], line[0, 1], line[1, 0], line[1, 1])
+        #         ax.annotate(r"$N_{:d}$".format(n), xy=(line[0] + offset), zorder=2)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         plt.show()
