@@ -146,35 +146,42 @@ if __name__ == "__main__":
 
     #reduce nodes
     test_env = TSPDistCost()
-    agent = AgentTSP()
+    #agent = AgentTSP()
+    infile = open("agent_regular_value_iteration", "rb")
+    agent = pickle.load(infile)
+    infile.close()
     iter_no = 0
     best_reward = -4000
     print(agent.env.distance_matrix)
 
-    iter_no += 1
+    #the following lines are commented if we are using the pickled agent
+
+
+    #iter_no += 1
     # perform N steps to fill reward & transitions tables
-    agent.play_n_random_steps(300000)
-    print("I have finished playing my random steps")
+    #agent.play_n_random_steps(300000)
+    #print("I have finished playing my random steps")
     # # run value iteration over all states
-    agent.value_iteration()
+    #agent.value_iteration()
     # save data structures with pickle
-    filename = "agent_regular_value_iteration"
-    outfile = open(filename, "wb")
-    pickle.dump(agent, outfile)
-    outfile.close()
+    # filename = "agent_regular_value_iteration"
+    # outfile = open(filename, "wb")
+    # pickle.dump(agent, outfile)
+    # outfile.close()
+
+
 
     reward = 0.0
     #given the path it will determine the single distances with the distance matrix
 
     while True:
         newReward, path = agent.play_episode(test_env)
-        if(best_reward < 0 and newReward > best_reward and positive==False):
+        if(best_reward < 0 and newReward > best_reward):
             best_reward = newReward
             if (best_reward > 0) :
                 print(f"{newReward} --> {path}")
                 agent.env.render_custom(path)
                 display_distances(agent.env.distance_matrix, path)
-                positive = True
                 best_reward = newReward
                 continue
 
