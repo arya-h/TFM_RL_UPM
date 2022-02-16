@@ -1,16 +1,11 @@
-import gym
 import collections
 import pickle
-from tensorboardX import SummaryWriter
-import or_gym
-from matplotlib import pyplot as plt
-import numpy as np
 # example of TSP problem with or-gym's environment
 from env_custom import *
 
 ENV_NAME = "TSP-v1"
 GAMMA = 0.9
-TEST_EPISODES = 20
+#TEST_EPISODES = 20
 
 
 class AgentTSP:
