@@ -147,8 +147,8 @@ def display_distances(matrix, path):
         print(f"{path[_-1]} --> {path[_]} : {dist}")
 
 if __name__ == "__main__":
-    # test_env = gym.make(ENV_NAME)
-    # reduce nodes
+
+    #test environment for playing episodes
     test_env = TSPDistCost()
     # agent = AgentTSP()
     # iter_no = 0
@@ -168,27 +168,24 @@ if __name__ == "__main__":
     # outfile.close()
     #
     # exit(0)
+
     infile = open("agent_Qlearn", "rb")
     agent = pickle.load(infile)
     infile.close()
-    best_positive_reward = 0
     reward = 0.0
     positive = False
     best_reward = -4000
-    # print(agent.env.distance_matrix)
-
     # given the path it will determine the single distances with the distance matrix
 
     while True:
         newReward, path = agent.play_episode(test_env)
-        if(best_reward < 0 and newReward > best_reward and positive==False):
+        if(best_reward < 0 and newReward > best_reward):
             best_reward = newReward
             if (best_reward > 0) :
                 print(f"{newReward} --> {path}")
                 #distances can be extracted from the distance matrix
                 display_distances(agent.env.distance_matrix, path)
                 agent.env.render_custom(path)
-                positive = True
                 best_reward = newReward
                 continue
 
@@ -196,6 +193,5 @@ if __name__ == "__main__":
             best_reward = newReward
             print(f"{newReward} --> {path}")
             display_distances(agent.env.distance_matrix, path)
-            #agent.env.render_custom(mode="human", path)
             agent.env.render_custom(path)
 

@@ -168,10 +168,7 @@ if __name__ == "__main__":
     pickle.dump(agent, outfile)
     outfile.close()
 
-    best_positive_reward=0
     reward = 0.0
-    positive=False
-
     #given the path it will determine the single distances with the distance matrix
 
     while True:
