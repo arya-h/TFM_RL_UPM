@@ -113,8 +113,6 @@ class AgentTSP:
                 #of RL. the way TSP in or-gym is designed will not close the loop, or at least
                 #that's what i gathered
 
-
-
                 total_reward += self.env.distance_matrix[path[0], path[-1]]
                 path.append(path[0])
 
