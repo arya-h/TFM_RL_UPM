@@ -108,6 +108,16 @@ class AgentTSP:
             self.transits[(state_tuple, action)] = new_state_tuple
             total_reward += reward
             if is_done:
+                #add last step back to origin node
+                #im just worried that this approach doesn't really satisfy the principles
+                #of RL. the way TSP in or-gym is designed will not close the loop, or at least
+                #that's what i gathered
+
+
+
+                total_reward += self.env.distance_matrix[path[0], path[-1]]
+                path.append(path[0])
+
                 break
             state = new_state
         return total_reward, path
@@ -146,11 +156,11 @@ if __name__ == "__main__":
 
     #reduce nodes
     test_env = TSPDistCost()
-    #agent = AgentTSP()
-    infile = open("agent_regular_value_iteration", "rb")
-    agent = pickle.load(infile)
-    infile.close()
-    iter_no = 0
+    agent = AgentTSP()
+    # infile = open("agent_regular_value_iteration", "rb")
+    # agent = pickle.load(infile)
+    # infile.close()
+    # iter_no = 0
     best_reward = -4000
     print(agent.env.distance_matrix)
 
@@ -159,10 +169,10 @@ if __name__ == "__main__":
 
     #iter_no += 1
     # perform N steps to fill reward & transitions tables
-    #agent.play_n_random_steps(300000)
-    #print("I have finished playing my random steps")
+    agent.play_n_random_steps(300000)
+    print("I have finished playing my random steps")
     # # run value iteration over all states
-    #agent.value_iteration()
+    agent.value_iteration()
     # save data structures with pickle
     # filename = "agent_regular_value_iteration"
     # outfile = open(filename, "wb")

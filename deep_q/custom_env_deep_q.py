@@ -90,6 +90,12 @@ class TSPEnv(gym.Env):
         self._generate_connections()
         self.current_node = np.random.choice(self.nodes)
         self.visit_log = {n: 0 for n in self.nodes}
+        #change
+        #will set the visit log for the starting node to -1 to make sure that the
+        #agent closes the loop
+        self.visit_log[self.current_node] = -1
+
+
         self.visit_log[self.current_node] += 1
 
         self.state = self._update_state()
@@ -213,10 +219,6 @@ class TSPDistCost(TSPEnv):
 
     def __init__(self, *args, **kwargs):
         self.N = 7
-        #change
-        #added variable start node, which will be updated for every run
-        self.start_node = None
-
         #2 opt
         #1- if in state [..] the agent will learn that choosign any of the actions of revisiting
         #is negative. when running the policy, no matter what it will not make that choice.
@@ -248,11 +250,6 @@ class TSPDistCost(TSPEnv):
 
     def _STEP(self, action):
         done = False
-
-        #check if the action chosen is the starting one
-        #if action == self.start_node and self.step_count<(self.N + 1):
-
-
         if self.visit_log[action] > 0:
             # Node already visited
             reward = self.invalid_action_cost
@@ -265,36 +262,17 @@ class TSPDistCost(TSPEnv):
         self.state = self._update_state()
         # See if all nodes have been visited
         unique_visits = self.visit_log.sum()
-
-        #change
-        #added +1 to close loop
-
         if unique_visits == self.N:
             done = True
-
-
-
 
         return self.state, reward, done, {}
 
     def _RESET(self):
         self.step_count = 0
         self.current_node = np.random.choice(self.nodes)
-        #change
-        #set start node at reset action
-        self.start_node = self.current_node
         self._generate_connections()
         self.visit_log = np.zeros(self.N)
-
-        #change
-        #will set the visit log for the starting node to -1 to make sure that the
-        #agent closes the loop
-        #self.visit_log[self.current_node] = -1
-
-
         self.visit_log[self.current_node] += 1
-
-
 
         self.state = self._update_state()
         return self.state
