@@ -6,7 +6,6 @@ from custom_env_deep_q import *
 from agent_deep_q import *
 import torch
 
-from deep_q.main import episode_durations, DQN
 from deep_q.replay_memory import Experience, ExperienceBuffer
 import random
 import math
