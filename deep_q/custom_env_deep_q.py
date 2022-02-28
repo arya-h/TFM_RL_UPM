@@ -231,6 +231,7 @@ class TSPDistCost(TSPEnv):
         self.coords = self._generate_coordinates()
         self.distance_matrix = self._get_distance_matrix()
         #print(self.distance_matrix)
+        self.step_limit = 2 * self.N
 
         #self.obs_dim = 1 + self.N
         self.obs_dim = 1 + self.N
@@ -283,7 +284,7 @@ class TSPDistCost(TSPEnv):
 
     def _RESET(self):
         self.step_count = 0
-        self.current_node = np.random.choice(self.nodes)
+        self.current_node = 6#np.random.choice(self.nodes)
         #change
         #set start node at reset action
         self.start_node = self.current_node
@@ -322,7 +323,7 @@ class TSPDistCost(TSPEnv):
 
     def _update_state(self):
         mask = np.where(self.visit_log == 0, 0, 1)
-        current_node_np = self.current_node.item()
+        current_node_np = self.current_node
         #obs = np.hstack([self.current_node, mask])
         obs = np.hstack([current_node_np, mask])
         if self.mask:
