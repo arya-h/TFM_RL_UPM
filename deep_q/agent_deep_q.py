@@ -26,10 +26,6 @@ class Agent:
 
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.001)
         self.criterion = nn.HuberLoss()
-
-        # self.rewards_matrix =  env.distance_matrix
-        # print(env.distance_matrix)
-        # print("##################################à")
         self._reset()
 
     def _reset(self):
@@ -45,11 +41,8 @@ class Agent:
         #     print(f"{steps_done} --> eps : {eps_threshold}" )
         if sample > eps_threshold:
             with torch.no_grad():
-                # t.max(1) will return largest column value of each row.
-                # second column on max result is index of where max element was
-                # found, so we pick action with the larger expected reward.
-                #x_np = torch.from_numpy(state)
-                #return self.policy_net(state).max(1)[1].view(1, 1)
+                # this will extract the index of the action_value with the current highest
+                #value, ensuring that the action with the highest possible (expected) reward is chosen.
                 index_action = torch.argmax(self.policy_net(state))
                 #print(self.policy_net(state).max()[1])
                 #return self.policy_net(state).max().view(1)
@@ -62,86 +55,38 @@ class Agent:
             return
         transitions = self.exp_buffer.sample(self.policy_net.minibatch_size)
         # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
-        # detailed explanation). This converts batch-array of Transitions
-        # to Transition of batch-arrays.
-        #batch = Experience(*zip(*transitions))
+        # detailed explanation).
+        # This converts batch-array of Experiences to Experience of batch-arrays.
+
         batch = Experience(*zip(transitions))
 
         # Compute a mask of non-final states and concatenate the batch elements
         # (a final state would've been the one after which simulation ended)
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.new_state[0])), device=device, dtype=torch.bool)
 
-
-
-        # print(tensors_newstate)
         tmp_non_final_next_states = []
         for val in batch.new_state[0]:
             if val is not None:
                 tmp_non_final_next_states.append(val)
 
-        #shape is (32, num_nodes + 1)
+        #shape is (batch_size, num_nodes + 1)
         non_final_next_states = torch.stack(tmp_non_final_next_states)
 
         #concatenate non final states in the batch in non_final_next_states
 
         state_batch = torch.stack(batch.state[0])
-        # state_batch_flat = torch.flatten(state_batch)
-        #
-        # state_batch_reshaped = torch.split(state_batch_flat, 8)
-        # state_batch_stack = torch.stack(state_batch_reshaped)
 
-        # state_batch = []
-        # for val in batch.state[0]:
-        #     #for subval in val:
-        #     state_batch.append(val)
-        #action_batch = torch.cat(batch.action[0])
-        # tensor_actions = torch.from_numpy(batch.action[0])
-        #tensor of dimension (32,) with the actions
-        #tmp_action_batch = np.zeros((32,8))
-        # tmp_action_batch = np.zeros((32,7))
-        # #tmp_action_batch = tmp_action_batch*batch.action[0]
-        # #print(tmp_action_batch)
-        # for _ in range(32):
-        #     tmp_action_batch[_][0] = batch.action[0][_]
-
-
-        # action_batch = torch.from_numpy(tmp_action_batch.astype(np.int64))
         action_batch_reshape = (np.reshape(batch.action[0], (16,1))).astype(np.int64)
         action_batch_v2 = torch.as_tensor(action_batch_reshape)
-        #action_batch_v2 = action_batch_v2((32,1))
-        # action_batch = []
-        # for val in batch.action[0]:
-        #     for subval in val:
-        #         action_batch.append(subval)
 
-        # reward_batch = torch.cat(batch.reward[0])
         reward_batch = torch.from_numpy(batch.reward[0])
-        # reward_batch = []
-        # for val in batch.reward:
-        #     for subval in val:
-        #         reward_batch.append(subval)
+
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
-        #interm = self.policy_net(state_batch)
-
 
         state_action_values = self.policy_net(state_batch).gather(1, action_batch_v2)
-        #print(state_action_values)
-        #convert action_batch to tensor
-        # action_batch = (torch.FloatTensor(action_batch)).type(torch.int64)
-
-        #blocked here, todo  RuntimeError: Index tensor must have the same number of dimensions as input tensor
-        #
-        #reshaped = torch.reshape(self.policy_net(state_batch),(32,))
-        # print(reshaped)
-        # # print(self.policy_net(state_batch)[:][1].shape)
-        # print("######################")
-        # print(action_batch.shape)
-
-        #state_action_values = reshaped.gather(dim = 0, index = action_batch)
-        #print(state_action_values)
 
 
         # Compute V(s_{t+1}) for all next states.
@@ -150,9 +95,7 @@ class Agent:
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.
         next_state_values = torch.zeros(self.policy_net.minibatch_size, device=device)
-        #next_state_values[non_final_mask] = self.target_net(non_final_next_states).max()[0].detach()
-        #non_final_next_states = torch.reshape(non_final_next_states, (non_final_next_states.shape[0],))
-        #non_final_next_states = torch.stack(non_final_next_states)
+
         tmp_next_state_values = self.target_net(non_final_next_states)
         max, ind =  torch.max(tmp_next_state_values,dim=1)#self.target_net(non_final_next_states).max().detach()
         next_state_values[non_final_mask] = max
