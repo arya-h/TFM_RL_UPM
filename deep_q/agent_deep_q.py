@@ -1,5 +1,6 @@
 from itertools import count
 
+from deep_q.DQN import DQN
 from torch import optim, nn
 
 from custom_env_deep_q import *
@@ -160,7 +161,7 @@ class Agent:
                 # Perform one step of the optimization (on the policy network)
                 loss = self.optimize_model()
                 if done:
-                    episode_durations.append(t + 1)
+                    #episode_durations.append(t + 1)
 
                     #close loop
                     path.append(path[0])

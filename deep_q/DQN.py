@@ -20,7 +20,7 @@ class DQN(nn.Module):
         self.relu2 = nn.RReLU(inplace=True)
 
         self.relu3 = nn.RReLU(inplace=True)
-        self.fc4   = nn.Linear(in_features=8, out_features=512)
+        self.fc4   = nn.Linear(in_features=n_nodes+1, out_features=512)
         self.relu4 = nn.RReLU(inplace = True)
         #try to substitute with 1 value out
         self.fc5 = nn.Linear(in_features=512, out_features=n_nodes)

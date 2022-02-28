@@ -214,7 +214,7 @@ class TSPDistCost(TSPEnv):
     '''
 
     def __init__(self, *args, **kwargs):
-        self.N = 7
+        self.N = 11
         #change
         #added variable start node, which will be updated for every run
         self.start_node = None
@@ -368,8 +368,8 @@ class TSPDistCost(TSPEnv):
         # n = np.linspace(0, 25, self.N + 1)
         # x = np.sin(n+7)
         # y = np.cos(n+0.8)
-        xL = [0.34,-0.99, 0.8, -0.6, 0.5, -0.2, 0.23]
-        yL = [0,    0.2,  0.3,  0,  -0.25,0.87, 0.03]
+        xL = [0.34,-0.99, 0.8, -0.6, 0.5, -0.2, 0.23, 1.56, 1.3, -1.6, -0.34]
+        yL = [0,    0.2,  0.3,  0,  -0.25,0.87, 0.03, 0.89, 1.2,   0 ,  -1.5]
 
         x = np.array(xL)
         y = np.array(yL)
