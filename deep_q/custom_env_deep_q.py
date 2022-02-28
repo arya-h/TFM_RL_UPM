@@ -284,7 +284,7 @@ class TSPDistCost(TSPEnv):
 
     def _RESET(self):
         self.step_count = 0
-        self.current_node = 6#np.random.choice(self.nodes)
+        self.current_node = np.random.choice(self.nodes)
         #change
         #set start node at reset action
         self.start_node = self.current_node
