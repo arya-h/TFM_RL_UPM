@@ -224,7 +224,7 @@ class TSPDistCost(TSPEnv):
         #is negative. when running the policy, no matter what it will not make that choice.
 
         #2- if in city N,
-        self.invalid_action_cost = -0.01
+        self.invalid_action_cost = -0.001
         self.mask = False
         utils.assign_env_config(self, kwargs)
         self.nodes = np.arange(self.N)
